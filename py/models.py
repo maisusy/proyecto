@@ -10,7 +10,7 @@ class Direccion(models.Model):
 class Persona(models.Model):
     nombre = models.CharField(max_length=30)
     apellido = models.CharField(max_length=40)
-    telefono = models.IntegerField()
+    telefono = models.CharField(max_length=10)
     direccion = models.ForeignKey(Direccion,on_delete=models.CASCADE)
     rol = models.CharField(max_length=50)
     def __str__(self):
