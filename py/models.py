@@ -4,6 +4,7 @@ from django.db import models
 class Direccion(models.Model):
     numero = models.IntegerField()
     nombre = models.CharField(max_length=50)
+    
     def __str__(self):
         return(" {} {} ".format(self.nombre, self.numero))
 
@@ -11,11 +12,43 @@ class Persona(models.Model):
     nombre = models.CharField(max_length=30)
     apellido = models.CharField(max_length=40)
     telefono = models.CharField(max_length=10)
-    direccion = models.ForeignKey(Direccion,on_delete=models.CASCADE)
-    rol = models.CharField(max_length=50)
+    DUEÑO = "DÑ"
+    ENCARGADO = "ENC"
+    CAPATAZ = "CZ"
+    PEONGENERAL = "PG"
+    PEONCOMUN = "PC"
+    CASERO = "CAS"
+    PUESTERO = "PUES"
+    QUINTERO = "QUIN"
+    ESQUILADOR = "ESQ"
+    COCINERO = "COC"
+    tiporol = [
+        (DUEÑO,'Dueño'),
+        (ENCARGADO,'Encargado'),
+        (CAPATAZ, 'Capataz'), 
+        (PEONGENERAL,'Peon General'), 
+        (PEONCOMUN,'Peon Comun'),
+        (CASERO,'Casero'), 
+        (PUESTERO,'Puestero'), 
+        (QUINTERO,'Quintero'), 
+        (ESQUILADOR,'Esquilador'),
+        (COCINERO,'Cocinero')
+    ]
+    rol = models.CharField(max_length=4, choices=tiporol,default=PEONCOMUN)
+    direccion = models.ManyToManyField(Direccion)
     def __str__(self):
         return  ("{} {}".format(self.nombre,self.apellido))
         
+
+class Fecha(models.Model):
+    fecha = models.DateField()
+    titulo = models.CharField(max_length=40)
+    descripcion = models.CharField(max_length=500)
+    horadesde = models.DateTimeField()
+    horahasta = models.DateTimeField()
+    def __str__(self):
+        return ("{} , {}".format(self.titulo,self.fecha))
+    
 
 class Amonestacion(models.Model):
     persona = models.ForeignKey(Persona,on_delete=models.CASCADE)
