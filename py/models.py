@@ -2,8 +2,8 @@ from django.db import models
 
 # Create your models here.
 class Direccion(models.Model):
-    numero = models.IntegerField()
     nombre = models.CharField(max_length=50)
+    numero = models.IntegerField()
     
     def __str__(self):
         return(" {} {} ".format(self.nombre, self.numero))
@@ -11,7 +11,7 @@ class Seccion(models.Model):
     nombre = models.CharField(max_length=20)
     def __str__(self):
         return self.nombre      
-class Persona(models.Model):
+class Personal(models.Model):
     nombre = models.CharField(max_length=30)
     apellido = models.CharField(max_length=40)
     FEMENINO = "F"
@@ -46,13 +46,13 @@ class Persona(models.Model):
         (COCINERO,'Cocinero')
     ]
     rol = models.CharField(max_length=4, choices=tiporol,default=PEONCOMUN)
-    direccion = models.ForeignKey(Direccion,on_delete=models.CASCADE,default="Killik Aike")
+    direccion = models.ManyToManyField(Direccion)
     telefono = models.CharField(max_length=10)
     def __str__(self):
         return  ("{} {}".format(self.nombre,self.apellido))      
 
 class Asistencia(models.Model):
-    empleado = models.ForeignKey(Persona,on_delete=models.CASCADE)
+    empleado = models.ForeignKey(Personal,on_delete=models.CASCADE)
     ENFERMO = "E"
     LICENCIA = "L"
     TRABAJO = "T"
@@ -87,17 +87,17 @@ class Fecha(models.Model):
         (OTRA,"Otra"),
     ]
     area_de_Trabajo = models.CharField(max_length=13, choices=area,default=OTRA)
-    lugar = models.ForeignKey(Seccion,on_delete=models.CASCADE,default="Killik Aike")
+    lugar = models.ForeignKey(Seccion,on_delete=models.CASCADE)
     def __str__(self):
         return ("{}".format(self.titulo))   
 class Amonestacion(models.Model):
-    empleado = models.ForeignKey(Persona,on_delete=models.CASCADE)
+    empleado = models.ForeignKey(Personal,on_delete=models.CASCADE)
     razon = models.CharField(max_length=200,help_text="Faltar el respeto a los compañeros del trabajo")
     consecuencia = models.CharField(max_length=500,help_text="Suspecion por 3 dias sin paga")
     def __str__(self):
         return ("{}".format(self.empleado))
 class Rodado(models.Model):
-    conductor = models.ManyToManyField(Persona)
+    conductor = models.ManyToManyField(Personal)
     patente = models.CharField(max_length=9)
     marca = models.CharField(max_length=20)
     tipo_motor = models.CharField(max_length=20)
@@ -157,7 +157,7 @@ class Alimento(models.Model):
     def __str__(self):
         return ("{}".format(self.nombre))
 class Prestamo(models.Model):
-    persona = models.ForeignKey(Persona,on_delete=models.CASCADE)
+    empleado = models.ForeignKey(Personal,on_delete=models.CASCADE)
     INSUMO = "I"
     ALIMENTO = "A"
     TIPOP = [
@@ -165,13 +165,22 @@ class Prestamo(models.Model):
         (ALIMENTO,"Alimento"),
     ]
     tipo_prestamo = models.CharField(choices=TIPOP,max_length=1,default=ALIMENTO)
-    alimento = models.ManyToManyField(Alimento)
+    alimento = models.ManyToManyField(Alimento,through="Prestamo_Alimento")
     insumo = models.ManyToManyField(Insumo)
     fecha_de_entrega = models.DateField()
     fecha_de_devolucion = models.DateField(blank=True)
     cantidad = models.IntegerField()
     def __str__(self):
         return ("{}".format(self.fecha_de_entrega))
+
+
+class Prestamo_Alimento (models.Model):
+    alimento = models.ForeignKey(Alimento,on_delete=models.CASCADE)
+    prestamo = models.ForeignKey(Prestamo,on_delete=models.CASCADE)
+    cantidad = models.IntegerField()
+    def __str__(self):
+        return self.cantidad
+    
 
 class Raza(models.Model):
     nombre = models.CharField(max_length=50)
@@ -183,7 +192,7 @@ class Raza(models.Model):
         (EQUINO,"Equino"),
         (AVICOLA,"Avicola"),
     ]
-    tipo_animal = models.CharField(choices=TIPOr,max_length=1)
+    tipo_animal = models.CharField(choices=TIPOr,max_length=1,default=OVINO)
     def __str__(self):
         return ("NOMBRE:{} , TIPO:{}".format(self.nombre,self.tipo_animal))      
 class Ovino(models.Model):
@@ -287,6 +296,6 @@ class Alambrado(models.Model):
         (EN_MANTENIMIENTO,"En mantenimiento"),
     ]
     estado = models.CharField(max_length=16, choices=tipo_estado,default=BUEN_ESTADO)
-    seccion = models.ForeignKey(Seccion,on_delete=models.CASCADE) 
+    seccion = models.ManyToManyField(Seccion) 
     def __str__(self):
         return ("{}".format(self.seccion))
